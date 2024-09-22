@@ -1,0 +1,53 @@
+package com.example.neostudy;
+
+import com.example.neostudy.controller.VacationPayController;
+import com.example.neostudy.entity.RequestVacationPayData;
+import com.example.neostudy.entity.VacationPayData;
+import com.example.neostudy.service.pay_service.ManagePayService;
+import com.example.neostudy.service.pay_service.VacationPayService;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.time.LocalDate;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest
+public class VacationPayControllerTest {
+
+    @Autowired
+    MockMvc mockMvc;
+
+    // Valid averageSalary and vacationDays return correct vacation pay
+    @Test
+    public void test_valid_average_salary_and_vacation_days() {
+        ManagePayService managePayService = Mockito.mock(ManagePayService.class);
+        VacationPayController controller = new VacationPayController(managePayService);
+
+        double averageSalary = 5000.0;
+        int vacationDays = 10;
+        LocalDate startWeekend = LocalDate.of(2023, 1, 1);
+        LocalDate endWeekend = LocalDate.of(2023, 1, 11);
+
+        VacationPayData vacationPayData = new VacationPayData(averageSalary, vacationDays, startWeekend, endWeekend);
+        RequestVacationPayData response = new RequestVacationPayData(50000.0);
+
+        Mockito.when(managePayService.getVacationPay(vacationPayData)).thenReturn(response);
+
+        ResponseEntity<?> result = controller.getVacationPay(averageSalary, vacationDays, startWeekend, endWeekend);
+
+        Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
+        Assertions.assertEquals(50000.0, result.getBody());
+    }
+
+}
